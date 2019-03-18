@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.zp.model.GiftCard;
 import com.zp.model.Goods;
+import com.zp.util.NumberUtil;
 
 /**
  * 订单服务类
@@ -55,14 +56,14 @@ public class OrderService {
 		// 使用赠卡
 		if (supportGiftCardAmount > 0) {
 			double deductionAmount = deductAmountUseGiftCard(userName, supportGiftCardAmount);
-			waitForPayment = waitForPayment - deductionAmount;
+			waitForPayment = NumberUtil.sub(waitForPayment, deductionAmount).doubleValue();
 			logger.info("使用赠卡抵扣金额: {}", deductionAmount);
 		}
 
 		// 使用余额
 		if (waitForPayment > 0) {
 			double deductionAmount = deductAmountUseAccount(userName, waitForPayment);
-			waitForPayment = waitForPayment - deductionAmount;
+			waitForPayment = NumberUtil.sub(waitForPayment, deductionAmount).doubleValue();
 			logger.info("使用充值账号抵扣金额: {}", deductionAmount);
 		}
 
@@ -125,11 +126,11 @@ public class OrderService {
 		double totalAmount = 0.0;
 		double supportGiftCardAmount = 0.0;
 		for (Goods goods : purchaseGoods) {
-			double singleGoodsAmount = goods.getPrice() * goods.getNum();
+			double singleGoodsAmount = NumberUtil.mul(goods.getPrice(), goods.getNum()).doubleValue();
 			if (goods.isSupportGiftCard()) {
-				supportGiftCardAmount += singleGoodsAmount;
+				supportGiftCardAmount = NumberUtil.sum(supportGiftCardAmount, singleGoodsAmount).doubleValue();
 			}
-			totalAmount += singleGoodsAmount;
+			totalAmount = NumberUtil.sum(totalAmount, singleGoodsAmount).doubleValue();
 		}
 		Order order = new Order();
 		order.totalAmount = totalAmount;
